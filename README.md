@@ -1,1 +1,1 @@
-# Python_Projects
+This Repository consists of some basics to intermediate level of python projects that i've worked upon. 
