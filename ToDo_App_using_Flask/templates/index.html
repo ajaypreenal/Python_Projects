@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Makes websites responsive on different devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask To-Do List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { max-width: 400px; margin: 20px auto; } 
+        input { width: 70%; padding: 8px; }
+        button { padding: 8px 12px; margin: 5px; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
+        .done { text-decoration: line-through; color: gray; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📌 Flask To-Do List</h2>
+        <input type="text" id="taskInput" placeholder="Enter a task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        // Load tasks from the server
+        function loadTasks() {
+            $.getJSON("/tasks", function(tasks) {
+                $("#taskList").empty();
+                tasks.forEach((task) => {
+                    $("#taskList").append(
+                        `<li class="${task.done ? 'done' : ''}">
+                            ${task.task} 
+                            <button onclick="markDone(${task.id})">✅</button>
+                            <button onclick="deleteTask(${task.id})">🗑️</button>
+                        </li>`
+                    );
+                });
+            });
+        }
+
+        // Add task to the server
+        function addTask() {
+            let task = $("#taskInput").val();
+            if (task) {
+                $.ajax({
+                    url: "/add",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ task }),
+                    success: loadTasks
+                });
+                $("#taskInput").val("");
+            }
+        }
+
+        // Mark task as done
+        function markDone(id) {
+            $.post(`/complete/${id}`, loadTasks);
+        }
+
+        // Delete task
+        function deleteTask(id) {
+            $.ajax({ url: `/delete/${id}`, type: "DELETE", success: loadTasks });
+        }
+
+        // Load tasks when the page is ready
+        $(document).ready(loadTasks);
+    </script>
+</body>
+</html>
